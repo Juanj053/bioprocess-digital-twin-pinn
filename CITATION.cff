@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this bioprocess digital twin software in your research or industrial biomanufacturing workflows, please cite it as below."
+authors:
+  - family-names: "Álvarez Morales"
+    given-names: "Juan José"
+    orcid: "https://orcid.org/0009-0004-9844-3866"
+    affiliation: "Elevate Biotech & Agromanper"
+title: "bioprocess-digital-twin-pinn: Physics-Informed Neural Network Digital Twin for Aerobic Bioreactor State Estimation"
+version: 0.1.0
+date-released: 2026-10-10
+url: "https://github.com/Juanj053/bioprocess-digital-twin-pinn"
+repository-code: "https://github.com/Juanj053/bioprocess-digital-twin-pinn"
+license: MIT
+keywords:
+  - physics-informed-neural-networks
+  - pinn
+  - bioprocess-engineering
+  - digital-twin
+  - bioreactor-kinetics
+  - monod-kinetics
+  - soft-sensor
+  - pytorch

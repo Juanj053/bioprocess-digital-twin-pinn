@@ -1,0 +1,50 @@
+# ==============================================================================
+# ELEVATE BIOTECH | 20 L AEROBIC STIRRED TANK BIOREACTOR SPECIFICATION
+# Physics-Informed Neural Network (PINN) Operational Benchmark
+# ==============================================================================
+
+vessel:
+  liquid_volume_liters: 20.0       # Operational working volume [L]
+  total_volume_liters: 28.0        # Total vessel volume [L] (aspect ratio H/D ~ 2.5)
+  agitation_rpm: 450.0             # Impeller rotational speed [RPM] (dual Rushton turbines)
+  aeration_vvm: 1.2                # Specific aeration rate [vvm = L_gas / (L_liq * min)]
+  temperature_celsius: 30.0        # Broth temperature [°C]
+  headspace_pressure_bar: 1.05     # Headspace backpressure [bar]
+  process_horizon_hours: 40.0      # Batch cultivation time [h]
+
+kinetics:
+  mu_max: 0.35                     # Maximum specific biomass growth rate [h^-1]
+  ks_glucose: 2.0                  # Monod affinity constant for glucose [g/L]
+  ko_oxygen: 0.0008                # Monod affinity constant for dissolved O2 [g/L] (0.8 mg/L)
+  kd_decay: 0.012                  # Endogenous biomass decay / lysis rate [h^-1]
+
+yields_and_maintenance:
+  y_xs: 0.48                       # True biomass yield on carbon substrate [g_X / g_S]
+  m_s: 0.020                       # Pirt maintenance energy coefficient [g_S / (g_X * h)]
+  y_xo: 1.10                       # Biomass yield on oxygen [g_X / g_O2]
+  m_o: 0.015                       # Cellular respiration maintenance rate [g_O2 / (g_X * h)]
+  y_ps: 0.85                       # Stoichiometric product yield on substrate [g_P / g_S]
+
+mass_transfer:
+  kla: 65.0                        # Volumetric oxygen transfer coefficient [h^-1]
+  c_star_do: 0.0078                # Saturated O2 solubility at 30°C, 1.05 bar [g/L] (7.8 mg/L)
+
+product_formation:
+  alpha: 0.15                      # Luedeking-Piret growth-associated coefficient [g_P / g_X]
+  beta: 0.010                      # Luedeking-Piret non-growth-associated coefficient [g_P / (g_X * h)]
+
+initial_conditions:
+  x0_biomass: 0.80                 # Initial dry cell weight [g/L]
+  s0_substrate: 35.00              # Initial glucose concentration [g/L]
+  cl0_dissolved_oxygen: 0.0078     # Initial dissolved oxygen concentration [g/L] (100% air saturation)
+  p0_product: 0.00                 # Initial target product concentration [g/L]
+
+pinn_hyperparameters:
+  hidden_dim: 64
+  num_layers: 3
+  collocation_points: 150
+  epochs: 4000
+  learning_rate: 0.002
+  lambda_physics: 0.05
+  lambda_ic: 0.15
+  lambda_balance: 0.01
