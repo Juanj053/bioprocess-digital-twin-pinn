@@ -8,7 +8,7 @@ Key bioengineering features:
 3. Characteristic physical scaling mapping normalized latent states to physical concentrations (g/L).
 """
 
-from typing import Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -79,7 +79,7 @@ class BioprocessPINN(nn.Module):
 
     def get_physical_states(
         self, t: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Transforms normalized network outputs into dimensional state concentrations in g/L.
         Returns: (X, S, CL, P)

@@ -28,6 +28,10 @@ jobs:
         run: |
           uv pip install --system -e ".[dev]"
 
+      - name: Lint with ruff
+        run: |
+          ruff check .
+
       - name: Run pytest test suite
         run: |
           pytest -v tests/

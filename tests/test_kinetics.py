@@ -1,9 +1,7 @@
 """Unit tests for bioprocess kinetics and ODE rates."""
 
-import pytest
-import numpy as np
 
-from pinn_bioprocess.core.kinetics import BioprocessParameters, BioprocessKinetics
+from pinn_bioprocess.core.kinetics import BioprocessKinetics, BioprocessParameters
 
 
 def test_default_parameters():

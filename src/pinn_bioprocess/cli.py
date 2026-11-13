@@ -4,15 +4,15 @@ Command-Line Interface (CLI) for the Bioprocess PINN Digital Twin.
 
 import argparse
 import json
-import sys
 from pathlib import Path
+
 import numpy as np
 
 from pinn_bioprocess.core.kinetics import BioprocessParameters
 from pinn_bioprocess.core.simulator import BioreactorSimulator
 from pinn_bioprocess.models.neural_pinn import BioprocessPINN
-from pinn_bioprocess.training.trainer import BioprocessPINNTrainer
 from pinn_bioprocess.training.metrics import compute_regression_metrics
+from pinn_bioprocess.training.trainer import BioprocessPINNTrainer
 
 
 def run_train(args: argparse.Namespace) -> None:
@@ -20,19 +20,38 @@ def run_train(args: argparse.Namespace) -> None:
     print("=" * 80)
     print("ELEVATE BIOTECH | PINN BIOPROCESS DIGITAL TWIN ENGINE")
     print("=" * 80)
-    print(f"Operational Horizon: {args.duration} h | Epochs: {args.epochs} | Learning Rate: {args.lr}")
 
     params = BioprocessParameters(t_final_h=args.duration)
     sim = BioreactorSimulator(params)
 
-    print("\n[1/3] Generating synthetic bioprocess telemetry & laboratory sampling...")
-    gt, obs = sim.generate_multirate_sensors(random_seed=args.seed)
-    print(f"  - Ground truth points: {len(gt['t'])}")
-    print(f"  - Offline analytical assays (HPLC/Biomass): {len(obs['t_offline'])} points")
-    print(f"  - Online optical DO sensor: {len(obs['t_online'])} points")
+    if args.input_telemetry:
+        print(f"\n[1/3] Loading batch telemetry from {args.input_telemetry}...")
+        gt, obs = sim.load_telemetry_file(args.input_telemetry)
+        params.t_final_h = max(1e-3, float(gt["t"][-1]))
+        params.X0 = float(gt["X"][0])
+        params.S0 = float(gt["S"][0])
+        params.CL0 = float(gt["CL"][0])
+        params.P0 = float(gt["P"][0])
+        print(f"Operational Horizon: {params.t_final_h:.2f} h | Epochs: {args.epochs} | Learning Rate: {args.lr}")
+        print(f"  - Telemetry samples loaded: {len(gt['t'])}")
+    else:
+        print(f"Operational Horizon: {args.duration} h | Epochs: {args.epochs} | Learning Rate: {args.lr}")
+        print("\n[1/3] Generating synthetic bioprocess telemetry & laboratory sampling...")
+        gt, obs = sim.generate_multirate_sensors(random_seed=args.seed)
+        print(f"  - Ground truth points: {len(gt['t'])}")
+        print(f"  - Offline analytical assays (HPLC/Biomass): {len(obs['t_offline'])} points")
+        print(f"  - Online optical DO sensor: {len(obs['t_online'])} points")
 
     print("\n[2/3] Initializing PyTorch BioprocessPINN and Physics Residual Collocation Engine...")
-    model = BioprocessPINN(hidden_dim=args.hidden_dim, num_layers=args.num_layers, t_max=args.duration)
+    model = BioprocessPINN(
+        hidden_dim=args.hidden_dim,
+        num_layers=args.num_layers,
+        t_max=params.t_final_h,
+        scale_X=max(12.0, float(np.max(gt["X"])) * 1.2),
+        scale_S=max(40.0, float(np.max(gt["S"])) * 1.2),
+        scale_CL=max(0.010, float(np.max(gt["CL"])) * 1.2),
+        scale_P=max(5.0, float(np.max(gt["P"])) * 1.2),
+    )
     trainer = BioprocessPINNTrainer(
         model=model,
         params=params,
@@ -110,6 +129,12 @@ def main() -> None:
     train_parser.add_argument("--lambda-ic", type=float, default=0.15, help="Weight for initial condition loss")
     train_parser.add_argument("--lambda-balance", type=float, default=0.01, help="Weight for balance loss")
     train_parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    train_parser.add_argument(
+        "--input-telemetry",
+        type=str,
+        default=None,
+        help="Optional CSV or bioprocess-visual-twin JSON telemetry file",
+    )
     train_parser.add_argument("--output", type=str, default="results/metrics.json", help="Path to save metrics JSON")
 
     # Simulate command

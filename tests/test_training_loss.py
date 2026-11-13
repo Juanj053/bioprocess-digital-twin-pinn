@@ -1,7 +1,7 @@
 """Unit tests for BioprocessPINNTrainer and physical loss components."""
 
-import torch
 import numpy as np
+import torch
 
 from pinn_bioprocess.core.kinetics import BioprocessParameters
 from pinn_bioprocess.core.simulator import BioreactorSimulator

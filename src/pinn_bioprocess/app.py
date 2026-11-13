@@ -3,18 +3,16 @@ Streamlit Web Dashboard for the PINN Bioprocess Digital Twin.
 Interactive real-time visualization of hybrid gray-box state estimation for a 20 L bioreactor.
 """
 
-import streamlit as st
-import numpy as np
 import plotly.graph_objects as go
+import streamlit as st
 from plotly.subplots import make_subplots
 
 from pinn_bioprocess.core.kinetics import BioprocessParameters
+from pinn_bioprocess.core.mass_balance import check_carbon_balance
 from pinn_bioprocess.core.simulator import BioreactorSimulator
 from pinn_bioprocess.models.neural_pinn import BioprocessPINN
-from pinn_bioprocess.training.trainer import BioprocessPINNTrainer
 from pinn_bioprocess.training.metrics import compute_regression_metrics
-from pinn_bioprocess.core.mass_balance import check_carbon_balance
-
+from pinn_bioprocess.training.trainer import BioprocessPINNTrainer
 
 st.set_page_config(
     page_title="PINN Bioprocess Digital Twin | Elevate Biotech",

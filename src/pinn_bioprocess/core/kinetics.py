@@ -9,35 +9,36 @@ Implements:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import Any
+
 import numpy as np
 
 
 @dataclass
 class BioprocessParameters:
     """Rigorous parameter container for 20 L aerobic stirred-tank fermentation."""
-    
+
     # Kinetic parameters
     mu_max: float = 0.35        # Maximum specific growth rate [h^-1]
     Ks: float = 2.0             # Monod constant for carbon substrate [g/L]
     Ko: float = 0.0008          # Affinity constant for dissolved O2 [g/L] (0.8 mg/L)
     kd: float = 0.012           # Endogenous decay / cell death rate [h^-1]
-    
+
     # Stoichiometric yields & maintenance
     Yxs: float = 0.48           # Biomass yield on substrate [g_X / g_S]
     ms: float = 0.020           # Pirt maintenance coefficient [g_S / (g_X * h)]
     Yxo: float = 1.10           # Biomass yield on oxygen [g_X / g_O2]
     mo: float = 0.015           # Respiration maintenance coefficient [g_O2 / (g_X * h)]
     Yps: float = 0.85           # Product yield on substrate [g_P / g_S]
-    
+
     # Gas-liquid mass transfer
     kla: float = 65.0           # Volumetric mass transfer coefficient [h^-1]
     C_star: float = 0.0078      # Saturation DO at 30°C, 1.05 bar [g/L] (7.8 mg/L)
-    
+
     # Luedeking-Piret product kinetics
     alpha: float = 0.15         # Growth-associated coefficient [g_P / g_X]
     beta: float = 0.010         # Non-growth-associated coefficient [g_P / (g_X * h)]
-    
+
     # Initial conditions
     X0: float = 0.80            # Initial biomass [g/L]
     S0: float = 35.00           # Initial glucose [g/L]
@@ -46,7 +47,7 @@ class BioprocessParameters:
     t_final_h: float = 40.0     # Cultivation duration [h]
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "BioprocessParameters":
+    def from_dict(cls, data: dict[str, Any]) -> "BioprocessParameters":
         """Instantiate parameters from a nested or flat dictionary."""
         kin = data.get("kinetics", {})
         yields = data.get("yields_and_maintenance", {})
@@ -104,14 +105,14 @@ class BioprocessKinetics:
             return 0.0
         return float((mu / self.p.Yxo) + self.p.mo)
 
-    def evaluate_derivatives(self, t: float, y: np.ndarray | List[float]) -> List[float]:
+    def evaluate_derivatives(self, t: float, y: np.ndarray | list[float]) -> list[float]:
         """
         Evaluates the 4 coupled ODE derivatives [dX/dt, dS/dt, dCL/dt, dP/dt].
         """
         X = max(float(y[0]), 0.0)
         S = max(float(y[1]), 0.0)
         CL = max(float(y[2]), 0.0)
-        P = max(float(y[3]), 0.0)
+        max(float(y[3]), 0.0)
 
         mu = self.specific_growth_rate(S, CL)
         qp = self.specific_product_rate(mu, S)

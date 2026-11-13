@@ -6,7 +6,7 @@ mass transfer, and stoichiometric balance ODEs for real-time state estimation
 and bioreactor soft-sensing.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Juan José Álvarez Morales"
 __license__ = "MIT"
 
@@ -17,7 +17,7 @@ from pinn_bioprocess.training.trainer import BioprocessPINNTrainer
 
 __all__ = [
     "BioprocessKinetics",
-    "BioreactorSimulator",
     "BioprocessPINN",
     "BioprocessPINNTrainer",
+    "BioreactorSimulator",
 ]

@@ -7,8 +7,6 @@ Calculates:
 - Physical boundary compliance (non-negativity and thermodynamic plausibility)
 """
 
-from typing import Dict, Any
-import numpy as np
 
 
 def check_carbon_balance(
@@ -21,7 +19,7 @@ def check_carbon_balance(
     carbon_fraction_glucose: float = 0.400,
     carbon_fraction_biomass: float = 0.480,
     carbon_fraction_product: float = 0.450,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Computes macroscopic carbon recovery between initial and final fermentation states.
     Carbon balance: C_consumed = C_biomass + C_product + C_CO2 (estimated by difference).

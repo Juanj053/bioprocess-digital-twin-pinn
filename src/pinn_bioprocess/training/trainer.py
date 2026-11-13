@@ -15,15 +15,15 @@ Where:
 - L_balance: Stoichiometric mass conservation regularizer.
 """
 
-from typing import Dict, Any, Tuple
 import time
+from typing import Any
+
 import numpy as np
 import torch
 import torch.nn as nn
 
 from pinn_bioprocess.core.kinetics import BioprocessParameters
 from pinn_bioprocess.models.neural_pinn import BioprocessPINN
-from pinn_bioprocess.training.metrics import compute_regression_metrics
 
 
 class BioprocessPINNTrainer:
@@ -60,7 +60,7 @@ class BioprocessPINNTrainer:
         p_obs_norm: torch.Tensor,
         t_on: torch.Tensor,
         cl_obs_norm: torch.Tensor,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Calculates all loss components."""
         # 1. DATA LOSS (Normalized Space)
         pred_off = self.model(t_off)
@@ -130,11 +130,11 @@ class BioprocessPINNTrainer:
 
     def fit(
         self,
-        observations: Dict[str, np.ndarray],
+        observations: dict[str, np.ndarray],
         epochs: int = 4000,
         lr: float = 2e-3,
         verbose: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Executes the PINN optimization training loop with Adam + Cosine Annealing.
         """
@@ -192,7 +192,7 @@ class BioprocessPINNTrainer:
             "final_loss": float(history["total_loss"][-1]),
         }
 
-    def predict(self, t_eval: np.ndarray) -> Dict[str, np.ndarray]:
+    def predict(self, t_eval: np.ndarray) -> dict[str, np.ndarray]:
         """Evaluates model state predictions across arbitrary query timestamps."""
         self.model.eval()
         with torch.no_grad():

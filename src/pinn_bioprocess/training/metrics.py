@@ -1,10 +1,9 @@
 """Evaluation metrics for digital twin trajectory validation."""
 
-from typing import Dict, Tuple
 import numpy as np
 
 
-def compute_metrics_series(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+def compute_metrics_series(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     """Computes R², MAE, and RMSE between ground truth and neural prediction."""
     y_true_flat = np.asarray(y_true).flatten()
     y_pred_flat = np.asarray(y_pred).flatten()
@@ -25,9 +24,9 @@ def compute_metrics_series(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, 
 
 
 def compute_regression_metrics(
-    gt: Dict[str, np.ndarray],
-    pred: Dict[str, np.ndarray],
-) -> Dict[str, Dict[str, float]]:
+    gt: dict[str, np.ndarray],
+    pred: dict[str, np.ndarray],
+) -> dict[str, dict[str, float]]:
     """Evaluates all 4 state trajectories."""
     return {
         "Biomass_X": compute_metrics_series(gt["X"], pred["X"]),

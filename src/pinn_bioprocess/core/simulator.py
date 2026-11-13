@@ -7,11 +7,14 @@ Generates:
 3. High-frequency online sensor observations (Optical DO probe) with electrochemical noise.
 """
 
-from typing import Dict, Tuple
+import csv
+import json
+from pathlib import Path
+
 import numpy as np
 import scipy.integrate as spi
 
-from pinn_bioprocess.core.kinetics import BioprocessParameters, BioprocessKinetics
+from pinn_bioprocess.core.kinetics import BioprocessKinetics, BioprocessParameters
 
 
 class BioreactorSimulator:
@@ -21,7 +24,7 @@ class BioreactorSimulator:
         self.p = params or BioprocessParameters()
         self.kinetics = BioprocessKinetics(self.p)
 
-    def simulate_dense(self, n_points: int = 401) -> Dict[str, np.ndarray]:
+    def simulate_dense(self, n_points: int = 401) -> dict[str, np.ndarray]:
         """
         Solves the coupled ODE system across [0, t_final] with high numerical accuracy.
         """
@@ -66,7 +69,7 @@ class BioreactorSimulator:
         n_online: int = 41,
         noise_online_std: float = 0.020,
         random_seed: int = 42,
-    ) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
+    ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Generates ground truth alongside realistic multi-rate observations:
         - Offline: Biomass (OD600/DCW), Substrate (HPLC glucose), Product (ELISA/HPLC).
@@ -118,4 +121,68 @@ class BioreactorSimulator:
             "CL_obs": CL_obs,
         }
 
+        return ground_truth, observations
+
+    def load_telemetry_file(
+        self, filepath: str | Path
+    ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+        """Load batch telemetry from CSV or a bioprocess-visual-twin JSON export."""
+        path = Path(filepath)
+        if path.suffix.lower() == ".json":
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            records = data.get("telemetry") or data.get("history") or []
+            if not records:
+                raise ValueError(f"No telemetry or history records found in {path}")
+
+            t_vals: list[float] = []
+            x_vals: list[float] = []
+            s_vals: list[float] = []
+            cl_vals: list[float] = []
+            p_vals: list[float] = []
+            for rec in records:
+                t_vals.append(float(rec.get("time_h", rec.get("t", 0.0))))
+                x_vals.append(float(rec.get("X", rec.get("biomass_g_L", 0.0))))
+                s_vals.append(float(rec.get("S", rec.get("substrate_g_L", 0.0))))
+                p_vals.append(float(rec.get("P", rec.get("product_g_L", 0.0))))
+                if "CL" in rec or "dissolved_oxygen_g_L" in rec:
+                    cl_val = float(rec.get("CL", rec.get("dissolved_oxygen_g_L", self.p.C_star)))
+                elif "DO_pct" in rec:
+                    cl_val = (float(rec["DO_pct"]) / 100.0) * self.p.C_star
+                else:
+                    cl_val = self.p.C_star
+                cl_vals.append(cl_val)
+        else:
+            with open(path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            if not rows:
+                raise ValueError(f"No telemetry rows found in {path}")
+            t_vals = [float(r["time_h"]) for r in rows]
+            x_vals = [float(r["biomass_g_L"]) for r in rows]
+            s_vals = [float(r["substrate_g_L"]) for r in rows]
+            cl_vals = [float(r["dissolved_oxygen_g_L"]) for r in rows]
+            p_vals = [float(r["product_g_L"]) for r in rows]
+
+        t_arr = np.asarray(t_vals, dtype=float)
+        x_arr = np.asarray(x_vals, dtype=float)
+        s_arr = np.asarray(s_vals, dtype=float)
+        cl_arr = np.asarray(cl_vals, dtype=float)
+        p_arr = np.asarray(p_vals, dtype=float)
+
+        ground_truth = {
+            "t": t_arr,
+            "X": x_arr,
+            "S": s_arr,
+            "CL": cl_arr,
+            "P": p_arr,
+        }
+        observations = {
+            "t_offline": t_arr,
+            "X_obs": x_arr,
+            "S_obs": s_arr,
+            "P_obs": p_arr,
+            "t_online": t_arr,
+            "CL_obs": cl_arr,
+        }
         return ground_truth, observations

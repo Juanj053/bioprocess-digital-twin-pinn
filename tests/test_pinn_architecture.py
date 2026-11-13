@@ -1,6 +1,7 @@
 """Unit tests for PyTorch BioprocessPINN architecture."""
 
 import torch
+
 from pinn_bioprocess.models.neural_pinn import BioprocessPINN
 
 
